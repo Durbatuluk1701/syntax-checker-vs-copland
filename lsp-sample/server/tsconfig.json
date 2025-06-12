@@ -7,8 +7,10 @@
 		"sourceMap": true,
 		"strict": true,
 		"outDir": "out",
-		"rootDir": "src"
+		"rootDir": "..",
+		"esModuleInterop": true,
+		"allowJs": true
 	},
-	"include": ["src"],
+	"include": ["src","../parser"],
 	"exclude": ["node_modules", ".vscode-test"]
 }
