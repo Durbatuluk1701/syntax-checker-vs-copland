@@ -12,8 +12,9 @@ var grammar = {
           type: "copland", 
           initial_place: d[0], 
           phrase: d[2] 
-        }) 
+        })
         },
+    {"name": "copland", "symbols": ["phrase"], "postprocess": d => d[0]},
     {"name": "initial_place", "symbols": [(lexer.has("star") ? {type: "star"} : star), "_", "places", "_", (lexer.has("colon") ? {type: "colon"} : colon)], "postprocess":  
         d => ({
           type: "initial_place",
@@ -43,10 +44,13 @@ var grammar = {
             },
     {"name": "at_phrase", "symbols": ["branch_phrase"], "postprocess": d => d[0]},
     {"name": "branch_phrase", "symbols": ["sequence_phrase", "_", "branch_op", "_", "sequence_phrase"], "postprocess": 
-        d => ({ type: "branch exp", 
-        op: d[1], 
-        left: d[0], 
-        right: d[4] })
+              d => ({ type: "branch exp", 
+              op: {
+        type: d[2].type,
+        value: d[2].value
+        	  }, 
+              left: d[0], 
+              right: d[4] })
             },
     {"name": "branch_phrase", "symbols": ["sequence_phrase"], "postprocess": d => d[0]},
     {"name": "sequence_phrase", "symbols": ["base_phrase", "_", (lexer.has("arrow") ? {type: "arrow"} : arrow), "_", "sequence_phrase"], "postprocess": 
@@ -56,12 +60,26 @@ var grammar = {
         phraseR: d[4] })
             },
     {"name": "sequence_phrase", "symbols": ["base_phrase"], "postprocess": d => d[0]},
+    {"name": "base_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "phrase"], "postprocess": 
+        d => ({
+          type: "at",
+          place: d[2],
+          phrase: d[4]
+        })
+            },
+    {"name": "base_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", (lexer.has("lbrack") ? {type: "lbrack"} : lbrack), "_", "phrase", "_", (lexer.has("rbrack") ? {type: "rbrack"} : rbrack)], "postprocess": 
+        d => ({
+          type: "at_bracket",
+          place: d[2],
+          phrase: d[6]
+        })
+            },
     {"name": "base_phrase", "symbols": ["symbol", "_", "place", "_", "symbol"], "postprocess": 
         d => ({
-          type: "measurement",
-          probe: d[0],
-          place: d[2],
-          target: d[4]
+        	type: "measurement",
+        	probe: d[0],
+        	place: d[2],
+        	target: d[4]
         })
         },
     {"name": "base_phrase", "symbols": [(lexer.has("null") ? {type: "null"} : null)], "postprocess": d => ({ type: "null" })},
