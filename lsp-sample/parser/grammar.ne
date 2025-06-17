@@ -22,11 +22,52 @@ initial_place -> %star _ places _ %colon {%
 %}
 
 # to do: places delimited by spaces
-places -> place _ (%comma _ place _):* {% 
+places -> place _ (%comma _ place):* {% 
   d => [d[0], ...d[2].map(p => p[2])]
 %}
 
-phrase -> symbol _ place _ symbol {%
+# +=== PHRASE RULES ===+
+
+phrase -> at_phrase {% d => d[0] %}
+
+at_phrase -> %at _ place _ phrase {%
+      d => ({
+        type: "at",
+        place: d[2],
+        phrase: d[4]
+      })
+    %}
+
+  | %at _ place _ %lbrack _ phrase _ %rbrack {%
+      d => ({
+        type: "at_bracket",
+        place: d[2],
+        phrase: d[6]
+      })
+    %}
+  
+  | branch_phrase {% d => d[0] %}
+
+branch_phrase ->
+    sequence_phrase _ branch_op _ sequence_phrase {%
+      d => ({ type: "branch exp", 
+      op: d[1], 
+      left: d[0], 
+      right: d[4] })
+    %}
+  | sequence_phrase {% d => d[0] %}
+
+sequence_phrase ->
+    base_phrase _ %arrow _ sequence_phrase {%
+      d => ({ 
+      type: "linear sequencing", 
+      phraseL: d[0], 
+      phraseR: d[4] })
+    %}
+  | base_phrase {% d => d[0] %}
+
+
+base_phrase -> symbol _ place _ symbol {%
   d => ({
     type: "measurement",
     probe: d[0],
@@ -38,28 +79,12 @@ phrase -> symbol _ place _ symbol {%
   | %copy _ symbol {% d => ({ type: "copy" }) %}
   | %sig _ symbol  {% d => ({ type: "signature" }) %}
   | %hash _ symbol {% d => ({ type: "hash" }) %}
-  | %at _ place _ phrase {%
-      d => ({
-        type: "at",
-        place: d[2],
-        phrase: d[4]
-      })
-  %}
-  | %at _ place _ %lbrack _ phrase _ %rbrack {%
-      d => ({
-        type: "at_bracket",
-        place: d[2],
-        phrase: d[6]
-      })
-  %}
-  # to do: ignoring first phrase term after initial_place in test phrase
-  | phrase _ %arrow _ phrase {%
-	d => ({
-		type: "linear sequencing",
-		phrase: d[0],
-		phrase: d[4]
-	})
-  %}
+
+# +=== SUPPORT RULES ===+
+
+branch_op ->
+  %seq_branch
+  | %par_branch
 
 symbol -> %identifier {% d => d[0].value %}
 
