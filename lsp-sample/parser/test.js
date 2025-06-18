@@ -5,7 +5,7 @@ const grammar = require("./grammar.js");
 const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 
 // Parse something!
-parser.feed("*p0, n : @ p1 [meas p2 sys] -> @ p1 [meas p2 targ] -<+ (asp p3 test +~+ asp p4 test) -> (@ p4 [meas p5 test1 -> meas p5 test2])");
+parser.feed("*p0: @p1 kim p2 ker -> ! -<- @p2 vc p2 sys -> !");
 
 // parser.results is an array of possible parsings.
 console.log(JSON.stringify(parser.results, null, 3));

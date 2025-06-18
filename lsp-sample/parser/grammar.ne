@@ -5,8 +5,12 @@ const lexer = require("./copland-lexer.js")
 %}
 
 # warning: be wary of whitespaces. observe carefully
-# to do: phrases
-copland -> initial_place _ phrase {% 
+# to do: fix parentheses?
+# to do: fix sig, hash, null, etc
+# to do: make everything indented properly 
+# to do: fix operator in branch
+
+copland -> initial_place _ phrase {% s
   d => ({ 
     type: "copland", 
     initial_place: d[0], 
@@ -29,36 +33,17 @@ places -> place _ (%comma _ place):* {%
 
 # +=== PHRASE RULES ===+
 
-phrase -> at_phrase {% d => d[0] %}
-		# | %lparen _ phrase _ %rparen {% d => d[2] %}
-
-at_phrase -> %at _ place _ phrase {%
-      d => ({
-        type: "at",
-        place: d[2],
-        phrase: d[4]
-      })
-    %}
-
-  | %at _ place _ %lbrack _ phrase _ %rbrack {%
-      d => ({
-        type: "at_bracket",
-        place: d[2],
-        phrase: d[6]
-      })
-    %}
-  
-  | branch_phrase {% d => d[0] %}
+phrase -> branch_phrase {% d => d[0] %}
 
 branch_phrase ->
     sequence_phrase _ branch_op _ sequence_phrase {%
       d => ({ type: "branch exp", 
       op: {
-		type: d[2].type,
-		value: d[2].value
+		    type: d[2].type,
+		    value: d[2].value
 	  }, 
-      left: d[0], 
-      right: d[4] })
+      branchLeft: d[0], 
+      branchRight: d[4] })
     %}
   | sequence_phrase {% d => d[0] %}
 
@@ -66,8 +51,8 @@ sequence_phrase ->
     base_phrase _ %arrow _ sequence_phrase {%
       d => ({ 
       type: "linear sequencing", 
-      phraseL: d[0], 
-      phraseR: d[4] })
+      seqLeft: d[0], 
+      seqRight: d[4] })
     %}
   | base_phrase {% d => d[0] %}
 
@@ -79,14 +64,14 @@ base_phrase ->
         place: d[2],
         phrase: d[4]
       })
-    %}
-    | %at _ place _ %lbrack _ phrase _ %rbrack {%
-      d => ({
-        type: "at_bracket",
-        place: d[2],
-        phrase: d[6]
+  %}
+  | %at _ place _ %lbrack _ phrase _ %rbrack {%
+    d => ({
+      type: "at_bracket",
+      place: d[2],
+      phrase: d[6]
       })
-    %}
+  %}
 	| symbol _ place _ symbol {%
 	d => ({
 		type: "measurement",
@@ -96,9 +81,10 @@ base_phrase ->
 	})
 	%}
   | %null {% d => ({ type: "null" }) %}
-  | %copy _ symbol {% d => ({ type: "copy" }) %}
-  | %sig _ symbol {% d => ({ type: "signature" }) %}
-  | %hash _ symbol {% d => ({ type: "hash" }) %}
+  | %copy {% d => ({ type: "copy" }) %}
+  | %sig {% d => ({ type: "signature" }) %}
+  | %hash {% d => ({ type: "hash" }) %}
+  | %lparen _ phrase _ %rparen {% d => d[2] %}
 
 # +=== SUPPORT RULES ===+
 
