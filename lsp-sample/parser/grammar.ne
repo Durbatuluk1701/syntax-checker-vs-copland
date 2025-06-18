@@ -10,7 +10,7 @@ const lexer = require("./copland-lexer.js")
 # to do: make everything indented properly 
 # to do: fix operator in branch
 
-copland -> initial_place _ phrase {% s
+copland -> initial_place _ phrase {%
   d => ({ 
     type: "copland", 
     initial_place: d[0], 
@@ -48,14 +48,24 @@ branch_phrase ->
   | sequence_phrase {% d => d[0] %}
 
 sequence_phrase ->
-    base_phrase _ %arrow _ sequence_phrase {%
+    unary_phrase _ %arrow _ sequence_phrase {%
       d => ({ 
       type: "linear sequencing", 
       seqLeft: d[0], 
       seqRight: d[4] })
     %}
-  | base_phrase {% d => d[0] %}
+  | unary_phrase {% d => d[0] %}
 
+unary_phrase ->
+    %null {% d => ({ type: "null" }) %}
+  | %null _ unary_phrase {% d => ({ type: "null" }) %}
+  | %copy {% d => ({ type: "copy" }) %}
+  | %copy _ unary_phrase {% d => ({ type: "copy" }) %}
+  | %sig {% d => ({ type: "signature" }) %}
+  | %sig _ unary_phrase {% d => ({ type: "signature" }) %}
+  | %hash {% d => ({ type: "hash" }) %}
+  | %hash _ unary_phrase {% d => ({ type: "hash" }) %}
+  | base_phrase
 
 base_phrase ->
 	%at _ place _ phrase {%
@@ -80,10 +90,6 @@ base_phrase ->
 		target: d[4]
 	})
 	%}
-  | %null {% d => ({ type: "null" }) %}
-  | %copy {% d => ({ type: "copy" }) %}
-  | %sig {% d => ({ type: "signature" }) %}
-  | %hash {% d => ({ type: "hash" }) %}
   | %lparen _ phrase _ %rparen {% d => d[2] %}
 
 # +=== SUPPORT RULES ===+

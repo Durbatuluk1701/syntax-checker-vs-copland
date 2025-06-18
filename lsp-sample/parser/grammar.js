@@ -7,7 +7,7 @@ const lexer = require("./copland-lexer.js")
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "copland", "symbols": ["initial_place", "_", "phrase"], "postprocess":  s
+    {"name": "copland", "symbols": ["initial_place", "_", "phrase"], "postprocess": 
         d => ({ 
           type: "copland", 
           initial_place: d[0], 
@@ -38,13 +38,22 @@ var grammar = {
               branchRight: d[4] })
             },
     {"name": "branch_phrase", "symbols": ["sequence_phrase"], "postprocess": d => d[0]},
-    {"name": "sequence_phrase", "symbols": ["base_phrase", "_", (lexer.has("arrow") ? {type: "arrow"} : arrow), "_", "sequence_phrase"], "postprocess": 
+    {"name": "sequence_phrase", "symbols": ["unary_phrase", "_", (lexer.has("arrow") ? {type: "arrow"} : arrow), "_", "sequence_phrase"], "postprocess": 
         d => ({ 
         type: "linear sequencing", 
         seqLeft: d[0], 
         seqRight: d[4] })
             },
-    {"name": "sequence_phrase", "symbols": ["base_phrase"], "postprocess": d => d[0]},
+    {"name": "sequence_phrase", "symbols": ["unary_phrase"], "postprocess": d => d[0]},
+    {"name": "unary_phrase", "symbols": [(lexer.has("null") ? {type: "null"} : null)], "postprocess": d => ({ type: "null" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("null") ? {type: "null"} : null), "_", "unary_phrase"], "postprocess": d => ({ type: "null" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("copy") ? {type: "copy"} : copy)], "postprocess": d => ({ type: "copy" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("copy") ? {type: "copy"} : copy), "_", "unary_phrase"], "postprocess": d => ({ type: "copy" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("sig") ? {type: "sig"} : sig)], "postprocess": d => ({ type: "signature" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("sig") ? {type: "sig"} : sig), "_", "unary_phrase"], "postprocess": d => ({ type: "signature" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("hash") ? {type: "hash"} : hash)], "postprocess": d => ({ type: "hash" })},
+    {"name": "unary_phrase", "symbols": [(lexer.has("hash") ? {type: "hash"} : hash), "_", "unary_phrase"], "postprocess": d => ({ type: "hash" })},
+    {"name": "unary_phrase", "symbols": ["base_phrase"]},
     {"name": "base_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "phrase"], "postprocess": 
         d => ({
           type: "at",
@@ -67,10 +76,6 @@ var grammar = {
         	target: d[4]
         })
         },
-    {"name": "base_phrase", "symbols": [(lexer.has("null") ? {type: "null"} : null)], "postprocess": d => ({ type: "null" })},
-    {"name": "base_phrase", "symbols": [(lexer.has("copy") ? {type: "copy"} : copy)], "postprocess": d => ({ type: "copy" })},
-    {"name": "base_phrase", "symbols": [(lexer.has("sig") ? {type: "sig"} : sig)], "postprocess": d => ({ type: "signature" })},
-    {"name": "base_phrase", "symbols": [(lexer.has("hash") ? {type: "hash"} : hash)], "postprocess": d => ({ type: "hash" })},
     {"name": "base_phrase", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "phrase", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": d => d[2]},
     {"name": "branch_op", "symbols": [(lexer.has("seq_branch") ? {type: "seq_branch"} : seq_branch)]},
     {"name": "branch_op", "symbols": [(lexer.has("par_branch") ? {type: "par_branch"} : par_branch)]},
