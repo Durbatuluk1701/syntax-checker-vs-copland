@@ -7,7 +7,7 @@ const lexer = require("./copland-lexer.js")
 # warning: be wary of whitespaces. observe carefully
 # to do: fix parentheses?
 # to do: fix sig, hash, null, etc
-# to do: make everything indented properly 
+# to do: make everything indented properly
 # to do: fix operator in branch
 
 copland -> initial_place _ phrase {%
