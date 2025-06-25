@@ -4,17 +4,15 @@
 const lexer = require("./copland-lexer.js")
 %}
 
-# branch phrase is next to implement for precedence
-
-copland -> initial_place _ at_phrase
+copland -> initial_place _ phrase
 	{%
 		d => ({
 			type: "copland",
 			initial_place: d[0],
-			at_phrase: d[2]
+			phrase: d[2]
 		})
 	%}
-	| at_phrase {% d => d[0] %}
+	| phrase {% d => d[0] %}
 
 initial_place -> %star _ places _ %colon {% 
   d => ({
@@ -27,23 +25,51 @@ places -> place _ (%comma _ place):* {%
   d => [d[0], ...d[2].map(p => p[2])]
 %}
 
+# == PHRASE RULES ==
+
+phrase -> at_phrase {% d => d[0] %}
+   | branch_phrase {% d => d[0] %}
+
 at_phrase -> 
-	%at _ place _ phrase {%
+	%at _ place _ branch_phrase {%
       d => ({
         type: "at",
         place: d[2],
-        phrase: d[4]
+        phrase: unwrap(d[4])
       })
   %}
-  | %at _ place _ %lbrack _ phrase _ %rbrack {%
+  | %at _ place _ %lbrack _ branch_phrase _ %rbrack {%
     d => ({
       type: "at_bracket",
       place: d[2],
       phrase: d[6]
       })
   %}
+  | branch_phrase
 
-phrase -> symbol _ place _ symbol {%
+branch_phrase -> 
+    branch_phrase _ branch_op _ sequence_phrase {%
+      d => ({ type: "branch exp", 
+      op: {
+		    type: d[2].type,
+		    value: d[2].value
+	  }, 
+      branchLeft: d[0], 
+      branchRight: d[4] })
+    %}
+  | sequence_phrase {% d => d[0] %}
+
+sequence_phrase ->
+     terminal_phrase _ %arrow _ sequence_phrase {%
+      d => ({ 
+      type: "linear sequencing", 
+      seqLeft: unwrap(d[0]), 
+      seqRight: unwrap(d[4]) })
+    %}
+  | terminal_phrase {% d => d[0] %}
+
+terminal_phrase ->
+  symbol _ place _ symbol {%
 	d => ({
 		type: "measurement",
 		probe: d[0],
@@ -51,13 +77,27 @@ phrase -> symbol _ place _ symbol {%
 		target: d[4]
 	})
 	%}
+  | %sig {% d => ({ type: "signature" }) %}
+  | %lparen _ phrase _ %rparen {% d => d[2] %}
 
 
+# == SUPPORT RULES ==
 symbol -> %identifier {% d => d[0].value %}
+
+branch_op ->
+  %seq_branch {% d => ({type: "seq_branch", value: d[0].value}) %}
+  | %par_branch {% d => ({type: "par_branch", value: d[0].value}) %}
 
 place -> symbol {% d => d[0] %}
 
 _ -> %ws:* {% () => null %}
 
+@{%
+
+function unwrap(d) {
+  return Array.isArray(d) && d.length === 1 ? d[0] : d;
+}
+
+%}
 
 
