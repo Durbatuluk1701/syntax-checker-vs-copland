@@ -35,22 +35,16 @@ var grammar = {
         d => [d[0], ...d[2].map(p => p[2])]
         },
     {"name": "phrase", "symbols": ["at_phrase"], "postprocess": d => d[0]},
-    {"name": "at_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "phrase"], "postprocess": 
+    {"name": "phrase", "symbols": ["branch_phrase"], "postprocess": d => d[0]},
+    {"name": "at_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "branch_phrase"], "postprocess": 
         d => ({
           type: "at",
           place: d[2],
           phrase: unwrap(d[4])
         })
           },
-    {"name": "at_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", (lexer.has("lbrack") ? {type: "lbrack"} : lbrack), "_", "phrase", "_", (lexer.has("rbrack") ? {type: "rbrack"} : rbrack)], "postprocess": 
-        d => ({
-          type: "at_bracket",
-          place: d[2],
-          phrase: d[6]
-          })
-          },
     {"name": "at_phrase", "symbols": ["branch_phrase"]},
-    {"name": "branch_phrase", "symbols": ["sequence_phrase", "_", "branch_op", "_", "at_phrase"], "postprocess": 
+    {"name": "branch_phrase", "symbols": ["branch_phrase", "_", "branch_op", "_", "sequence_phrase"], "postprocess": 
               d => ({ type: "branch exp", 
               op: {
         		    type: d[2].type,
@@ -76,6 +70,20 @@ var grammar = {
         })
         },
     {"name": "terminal_phrase", "symbols": [(lexer.has("sig") ? {type: "sig"} : sig)], "postprocess": d => ({ type: "signature" })},
+    {"name": "terminal_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", (lexer.has("lbrack") ? {type: "lbrack"} : lbrack), "_", "branch_phrase", "_", (lexer.has("rbrack") ? {type: "rbrack"} : rbrack)], "postprocess": 
+        d => ({
+          type: "at_bracket",
+          place: d[2],
+          phrase: d[6]
+          })
+          },
+    {"name": "terminal_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "branch_phrase"], "postprocess": 
+        d => ({
+          type: "at",
+          place: d[2],
+          phrase: unwrap(d[4])
+        })
+          },
     {"name": "terminal_phrase", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "phrase", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": d => d[2]},
     {"name": "symbol", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": d => d[0].value},
     {"name": "branch_op", "symbols": [(lexer.has("seq_branch") ? {type: "seq_branch"} : seq_branch)], "postprocess": d => ({type: "seq_branch", value: d[0].value})},

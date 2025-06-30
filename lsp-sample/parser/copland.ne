@@ -38,13 +38,6 @@ at_phrase ->
         phrase: unwrap(d[4])
       })
   %}
-  | %at _ place _ %lbrack _ branch_phrase _ %rbrack {%
-    d => ({
-      type: "at_bracket",
-      place: d[2],
-      phrase: d[6]
-      })
-  %}
   | branch_phrase
 
 branch_phrase -> 
@@ -78,6 +71,20 @@ terminal_phrase ->
 	})
 	%}
   | %sig {% d => ({ type: "signature" }) %}
+  | %at _ place _ %lbrack _ branch_phrase _ %rbrack {%
+    d => ({
+      type: "at_bracket",
+      place: d[2],
+      phrase: d[6]
+      })
+  %}
+  | %at _ place _ branch_phrase {%
+      d => ({
+        type: "at",
+        place: d[2],
+        phrase: unwrap(d[4])
+      })
+  %}
   | %lparen _ phrase _ %rparen {% d => d[2] %}
 
 
