@@ -35,16 +35,16 @@ var grammar = {
         d => [d[0], ...d[2].map(p => p[2])]
         },
     {"name": "phrase", "symbols": ["at_phrase"], "postprocess": d => d[0]},
-    {"name": "at_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "branch_phrase"], "postprocess": 
+    {"name": "at_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "at_phrase"], "postprocess": 
         d => ({
           type: "at",
           place: d[2],
           phrase: unwrap(d[4]),
-          derivation: "at_phrase -> at place branch_phrase"
+          derivation: "at_phrase -> at place seq_phrase"
         })
           },
-    {"name": "at_phrase", "symbols": ["branch_phrase"]},
-    {"name": "branch_phrase", "symbols": ["branch_phrase", "_", "branch_op", "_", "sequence_phrase"], "postprocess": 
+    {"name": "at_phrase", "symbols": ["branch_phrase"], "postprocess": d => d[0]},
+    {"name": "branch_phrase", "symbols": ["at_phrase", "_", "branch_op", "_", "at_phrase"], "postprocess": 
               d => ({ type: "branch exp", 
               op: {
         		    type: d[2].type,
@@ -52,7 +52,7 @@ var grammar = {
         }, 
               branchLeft: d[0], 
               branchRight: d[4],
-              derivation: "branch_phrase -> branch_phrase branch_op sequence_phrase"
+              derivation: "branch_phrase -> at_phrase branch_op at_phrase"
             })
             },
     {"name": "branch_phrase", "symbols": ["sequence_phrase"], "postprocess": d => d[0]},
@@ -60,8 +60,8 @@ var grammar = {
         d => ({ 
         type: "linear sequencing", 
         seqLeft: unwrap(d[0]), 
-        seqRight: unwrap(d[4]) }),
-        derivation: "sequence_phrase -> terminal_phrase arrow sequence_phrase"
+        seqRight: unwrap(d[4]),
+        derivation: "sequence_phrase -> terminal_phrase arrow sequence_phrase" })
             },
     {"name": "sequence_phrase", "symbols": ["terminal_phrase"], "postprocess": d => d[0]},
     {"name": "terminal_phrase", "symbols": ["symbol", "_", "place", "_", "symbol"], "postprocess": 
@@ -78,16 +78,8 @@ var grammar = {
           type: "at_bracket",
           place: d[2],
           phrase: d[6],
-          derivation: "terminal_phrase -> at place lbrack branch_phrase rbrack"
+          derivation: "terminal phrase -> at_bracket"
           })
-          },
-    {"name": "terminal_phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "branch_phrase"], "postprocess": 
-        d => ({
-          type: "at",
-          place: d[2],
-          phrase: unwrap(d[4]),
-          derivation: "terminal_phrase -> at place branch_phrase"
-        })
           },
     {"name": "terminal_phrase", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "phrase", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": d => d[2]},
     {"name": "symbol", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": d => d[0].value},

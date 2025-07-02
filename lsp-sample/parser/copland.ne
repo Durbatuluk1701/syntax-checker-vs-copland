@@ -30,18 +30,18 @@ places -> place _ (%comma _ place):* {%
 phrase -> at_phrase {% d => d[0] %}
 
 at_phrase -> 
-	%at _ place _ branch_phrase {%
+	%at _ place _ phrase {%
       d => ({
         type: "at",
         place: d[2],
         phrase: unwrap(d[4]),
-        derivation: "at_phrase -> at place branch_phrase"
+        derivation: "at_phrase -> at place phrase"
       })
   %}
-  | branch_phrase
+  | branch_phrase {% d => d[0] %}
 
 branch_phrase -> 
-    branch_phrase _ branch_op _ sequence_phrase {%
+    sequence_phrase _ branch_op _ phrase {%
       d => ({ type: "branch exp", 
       op: {
 		    type: d[2].type,
@@ -49,9 +49,31 @@ branch_phrase ->
 	  }, 
       branchLeft: d[0], 
       branchRight: d[4],
-      derivation: "branch_phrase -> branch_phrase branch_op sequence_phrase"
+      derivation: "branch_phrase -> seq_phrase branch_op phrase"
     })
     %}
+    # |  at_phrase _ branch_op _ branch_phrase {%
+    #   d => ({ type: "branch exp", 
+    #   op: {
+		#     type: d[2].type,
+		#     value: d[2].value
+	  # }, 
+    #   branchLeft: d[0], 
+    #   branchRight: d[4],
+    #   derivation: "branch_phrase -> at_phrase branch_op branch_phrase"
+    # })
+    # %}
+    # |  branch_phrase _ branch_op _ sequence_phrase {%
+    #   d => ({ type: "branch exp", 
+    #   op: {
+		#     type: d[2].type,
+		#     value: d[2].value
+	  # }, 
+    #   branchLeft: d[0], 
+    #   branchRight: d[4],
+    #   derivation: "branch_phrase -> branch_phrase branch_op seq_phrase"
+    # })
+    # %}
   | sequence_phrase {% d => d[0] %}
 
 sequence_phrase ->
@@ -59,8 +81,8 @@ sequence_phrase ->
       d => ({ 
       type: "linear sequencing", 
       seqLeft: unwrap(d[0]), 
-      seqRight: unwrap(d[4]) }),
-      derivation: "sequence_phrase -> terminal_phrase arrow sequence_phrase"
+      seqRight: unwrap(d[4]),
+      derivation: "sequence_phrase -> terminal_phrase arrow sequence_phrase" })
     %}
   | terminal_phrase {% d => d[0] %}
 
@@ -79,19 +101,18 @@ terminal_phrase ->
       type: "at_bracket",
       place: d[2],
       phrase: d[6],
-      derivation: "terminal_phrase -> at place lbrack branch_phrase rbrack"
+      derivation: "terminal phrase -> at_bracket"
       })
   %}
-  | %at _ place _ branch_phrase {%
-      d => ({
-        type: "at",
-        place: d[2],
-        phrase: unwrap(d[4]),
-        derivation: "terminal_phrase -> at place branch_phrase"
-      })
-  %}
+  # | %at _ place _ branch_phrase {%
+  #     d => ({
+  #       type: "at",
+  #       place: d[2],
+  #       phrase: unwrap(d[4]),
+  #       derivation: "at_phrase -> at place branch_phrase"
+  #     })
+  # %}
   | %lparen _ phrase _ %rparen {% d => d[2] %}
-
 
 # == SUPPORT RULES ==
 symbol -> %identifier {% d => d[0].value %}
@@ -111,5 +132,3 @@ function unwrap(d) {
 }
 
 %}
-
-
