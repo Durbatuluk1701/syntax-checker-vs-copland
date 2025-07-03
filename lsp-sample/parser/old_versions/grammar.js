@@ -3,7 +3,7 @@
 (function () {
 function id(x) { return x[0]; }
 
-const lexer = require("./copland-lexer.js")
+const lexer = require("../copland-lexer.js")
 var grammar = {
     Lexer: lexer,
     ParserRules: [
