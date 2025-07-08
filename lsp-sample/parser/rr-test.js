@@ -7,7 +7,7 @@ const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar),
 );
 
 // Parse something!
-parser.feed("*p0: @p1 kim p2 ker -> !");
+parser.feed("@p1 [meas p2 sys]");
 
 // parser.results is an array of possible parsings.
 console.log(JSON.stringify(parser.results, null, 3));

@@ -36,7 +36,7 @@ phrase ->
 		})
 	%}
 	| %sig _ phrase0 {% d => ({ type: "signature" }) %}
-	| %at _ place _ %lbrack _ phrase _ %rbrack _ phrase0 {%
+	| %at _ place _ %lbrack _ phrase _ %rbrack _ phrase0:? {%
 		d => ({
 		type: "at_bracket",
 		place: d[2],
@@ -44,14 +44,7 @@ phrase ->
 		derivation: "phrase -> at place bracket phrase phrase0"
 		})
 	%}
-	| %at _ place _ phrase _ phrase0 {%
-		d => ({
-		type: "at",
-		place: d[2],
-		phrase: unwrap(d[4]),
-		derivation: "phrase -> at place phrase phrase0"
-		})
-	%}
+	| %lparen _ phrase _ %rparen _ phrase0 {% d => d[2] %}
 
 phrase0 -> null
 	| %arrow _ phrase _ phrase0 {%
@@ -72,7 +65,6 @@ phrase0 -> null
       derivation: "phrase0 -> branch_op phrase phrase0"
     })
     %}
-
 # == SUPPORT RULES ==
 symbol -> %identifier {% d => d[0].value %}
 

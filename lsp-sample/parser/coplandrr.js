@@ -45,7 +45,9 @@ var grammar = {
         })
         	},
     {"name": "phrase", "symbols": [(lexer.has("sig") ? {type: "sig"} : sig), "_", "phrase0"], "postprocess": d => ({ type: "signature" })},
-    {"name": "phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", (lexer.has("lbrack") ? {type: "lbrack"} : lbrack), "_", "phrase", "_", (lexer.has("rbrack") ? {type: "rbrack"} : rbrack), "_", "phrase0"], "postprocess": 
+    {"name": "phrase$ebnf$1", "symbols": ["phrase0"], "postprocess": id},
+    {"name": "phrase$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", (lexer.has("lbrack") ? {type: "lbrack"} : lbrack), "_", "phrase", "_", (lexer.has("rbrack") ? {type: "rbrack"} : rbrack), "_", "phrase$ebnf$1"], "postprocess": 
         d => ({
         type: "at_bracket",
         place: d[2],
@@ -53,14 +55,7 @@ var grammar = {
         derivation: "phrase -> at place bracket phrase phrase0"
         })
         	},
-    {"name": "phrase", "symbols": [(lexer.has("at") ? {type: "at"} : at), "_", "place", "_", "phrase", "_", "phrase0"], "postprocess": 
-        d => ({
-        type: "at",
-        place: d[2],
-        phrase: unwrap(d[4]),
-        derivation: "phrase -> at place phrase phrase0"
-        })
-        	},
+    {"name": "phrase", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen), "_", "phrase", "_", (lexer.has("rparen") ? {type: "rparen"} : rparen), "_", "phrase0"], "postprocess": d => d[2]},
     {"name": "phrase0", "symbols": []},
     {"name": "phrase0", "symbols": [(lexer.has("arrow") ? {type: "arrow"} : arrow), "_", "phrase", "_", "phrase0"], "postprocess": 
         d => ({ 
